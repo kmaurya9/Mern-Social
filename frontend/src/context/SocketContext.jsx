@@ -2,7 +2,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { UserData } from "./UserContext";
 
-const EndPoint = "https://mern-social-3e3m.onrender.com";
+// Use current domain in production, localhost in development
+const EndPoint = window.location.hostname === 'localhost' 
+  ? "http://localhost:3000" 
+  : window.location.origin;
 
 const SocketContext = createContext();
 
