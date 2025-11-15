@@ -21,7 +21,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env'), override: false });
 console.log("Environment check - TMDB_API_KEY exists:", !!process.env.TMDB_API_KEY);
 console.log("Environment check - MONGO_URI exists:", !!process.env.MONGO_URI);
 
-const url = `https://mern-social-3e3m.onrender.com`;
+const url = `https://mern-social-idx8.onrender.com`;
 const interval = 30000;
 
 function reloadWebsite() {
