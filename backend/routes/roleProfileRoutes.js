@@ -10,6 +10,12 @@ import {
   addToWatchlist,
   updateCuratorExpertise,
   addAdminActivityLog,
+  createCuratorList,
+  getCuratorLists,
+  deleteCuratorList,
+  updateCuratorList,
+  addMovieToCuratorList,
+  removeMovieFromCuratorList,
 } from "../controllers/roleProfileControllers.js";
 
 const router = express.Router();
@@ -23,6 +29,14 @@ router.post("/viewer/watchlist", isAuth, addToWatchlist);
 router.post("/curator", isAuth, createCuratorProfile);
 router.get("/curator/:userId", isAuth, getCuratorProfile);
 router.put("/curator/expertise", isAuth, updateCuratorExpertise);
+
+// Curator List routes
+router.post("/curator/list/create", isAuth, createCuratorList);
+router.get("/curator/list/all", isAuth, getCuratorLists);
+router.put("/curator/list/:listId", isAuth, updateCuratorList);
+router.delete("/curator/list/:listId", isAuth, deleteCuratorList);
+router.post("/curator/list/:listId/movie", isAuth, addMovieToCuratorList);
+router.delete("/curator/list/:listId/movie/:movieId", isAuth, removeMovieFromCuratorList);
 
 // Admin routes
 router.post("/admin", isAuth, createAdminProfile);
