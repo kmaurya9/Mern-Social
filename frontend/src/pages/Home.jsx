@@ -9,11 +9,11 @@ import Footer from "../components/Footer";
 
 const Home = () => {
   const { posts, loading } = PostData();
-  const { isAuth, user } = UserData();
+  const { isAuth, user, loading: userLoading } = UserData();
 
   // For logged-in users, show their posts first, then others
   let sortedPosts = posts;
-  if (isAuth && user && posts) {
+  if (isAuth && user && posts && !userLoading) {
     const userPosts = posts.filter((post) => post.owner._id === user._id);
     const otherPosts = posts.filter((post) => post.owner._id !== user._id);
     sortedPosts = [...userPosts, ...otherPosts];

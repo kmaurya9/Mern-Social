@@ -265,7 +265,7 @@ const MovieDetails = () => {
                         </div>
                       </div>
                     </div>
-                    {isAuth && user._id === rev.user._id && (
+                    {isAuth && user && user._id === rev.user._id && (
                       <button
                         onClick={() => handleDeleteReview(rev._id)}
                         className="text-red-500 hover:text-red-700"

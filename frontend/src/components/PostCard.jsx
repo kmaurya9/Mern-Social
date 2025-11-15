@@ -22,10 +22,11 @@ const PostCard = ({ type, value }) => {
   const formatDate = format(new Date(value.createdAt), "MMMM do");
 
   useEffect(() => {
+    if (!user) return;
     for (let i = 0; i < value.likes.length; i++) {
       if (value.likes[i] === user._id) setIsLike(true);
     }
-  }, [value, user._id]);
+  }, [value, user]);
 
   const likeHandler = () => {
     setIsLike(!isLike);
