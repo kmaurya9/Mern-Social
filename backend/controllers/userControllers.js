@@ -174,3 +174,24 @@ export const updateUserRole = TryCatch(async (req, res) => {
     user,
   });
 });
+
+export const deleteUser = TryCatch(async (req, res) => {
+  const userId = req.params.id;
+  const currentUserId = req.user._id;
+
+  // Prevent admin from deleting themselves
+  if (userId === currentUserId.toString()) {
+    return res.status(400).json({ message: "You cannot delete your own account" });
+  }
+
+  const user = await User.findByIdAndDelete(userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json({
+    message: "User deleted successfully",
+    deletedUser: user.name,
+  });
+});

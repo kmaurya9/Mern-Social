@@ -57,6 +57,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/user/${userId}`);
+      toast.success(`User ${userName} deleted successfully`);
+      // Refresh users list
+      const { data } = await axios.get('/api/user/all');
+      setUsers(data);
+      
+      const adminCount = data.filter(u => u.role === 'admin').length;
+      const curatorCount = data.filter(u => u.role === 'curator').length;
+      
+      setStats({
+        total: data.length,
+        admins: adminCount,
+        curators: curatorCount,
+        viewers: data.length - adminCount - curatorCount
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete user');
+    }
+  };
+
   // Only admins can access this page
   if (!isAuth || user.role !== 'admin') {
     return (
@@ -104,39 +130,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Admin Actions */}
-        <div className="grid grid-cols-1 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">User Management</h2>
-            <div className="space-y-3">
-              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition">
-                View All Users
-              </button>
-              <button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition">
-                Manage Roles
-              </button>
-              <button className="w-full bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded transition">
-                Deactivate Users
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Admin Features Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-bold text-blue-900 mb-3">Admin Capabilities</h3>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-blue-800">
-            <div>
-              <h4 className="font-bold mb-2">User Management</h4>
-              <ul className="space-y-1 text-sm">
-                <li>✓ View all users and their details</li>
-                <li>✓ Change user roles (Viewer, Curator, Admin)</li>
-                <li>✓ Manage platform users</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
         {/* Recent Users */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold mb-4">All Users ({stats.total})</h2>
@@ -150,7 +143,7 @@ const AdminDashboard = () => {
                     <p className="text-gray-900 font-semibold">{u.name}</p>
                     <p className="text-sm text-gray-500">{u.email}</p>
                   </div>
-                  <div>
+                  <div className="flex gap-2 items-center">
                     <select 
                       value={u.role} 
                       onChange={(e) => handleRoleChange(u._id, e.target.value)}
@@ -160,6 +153,12 @@ const AdminDashboard = () => {
                       <option value="curator">Curator</option>
                       <option value="admin">Admin</option>
                     </select>
+                    <button
+                      onClick={() => handleDeleteUser(u._id, u.name)}
+                      className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
