@@ -13,21 +13,30 @@ export const SocketContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const { user } = UserData();
+  
   useEffect(() => {
-    const socket = io(EndPoint, {
+    // Only connect if user exists and has an _id
+    if (!user || !user._id) {
+      return;
+    }
+
+    const newSocket = io(EndPoint, {
       query: {
-        userId: user?._id,
+        userId: user._id,
       },
     });
 
-    setSocket(socket);
+    setSocket(newSocket);
 
-    socket.on("getOnlineUser", (users) => {
+    newSocket.on("getOnlineUser", (users) => {
       setOnlineUsers(users);
     });
 
-    return () => socket && socket.close();
-  }, [user?._id]);
+    return () => {
+      newSocket && newSocket.close();
+    };
+  }, [user]);
+  
   return (
     <SocketContext.Provider value={{ socket, onlineUsers }}>
       {children}
