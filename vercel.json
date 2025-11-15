@@ -1,6 +1,8 @@
 {
   "version": 2,
   "name": "mern-social",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
   "builds": [
     {
       "src": "backend/index.js",
@@ -10,8 +12,7 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "frontend/dist",
-        "buildCommand": "npm run build"
+        "distDir": "frontend/dist"
       }
     }
   ],
@@ -24,6 +25,5 @@
       "src": "/(.*)",
       "dest": "/frontend/dist/index.html"
     }
-  ],
-  "outputDirectory": "frontend/dist"
+  ]
 }
