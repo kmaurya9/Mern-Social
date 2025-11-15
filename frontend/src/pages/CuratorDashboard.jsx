@@ -11,6 +11,16 @@ const CuratorDashboard = () => {
   const [newListName, setNewListName] = useState('');
   const [newListDesc, setNewListDesc] = useState('');
   const [loading, setLoading] = useState(true);
+  
+  // Edit list state
+  const [editingList, setEditingList] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  
+  // Add movie state
+  const [selectedList, setSelectedList] = useState(null);
+  const [movieSearch, setMovieSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   // Fetch lists on component mount
   useEffect(() => {
@@ -62,6 +72,126 @@ const CuratorDashboard = () => {
     } catch (error) {
       console.error('Error deleting list:', error);
       toast.error('Failed to delete list');
+    }
+  };
+
+  // Edit list handlers
+  const handleEditClick = (list) => {
+    setEditingList(list.listId);
+    setEditName(list.listName);
+    setEditDesc(list.description);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await axios.put(`/api/profile/curator/list/${editingList}`, {
+        listName: editName,
+        description: editDesc,
+      });
+      
+      setLists(lists.map(list => 
+        list.listId === editingList 
+          ? { ...list, listName: editName, description: editDesc }
+          : list
+      ));
+      
+      setEditingList(null);
+      setEditName('');
+      setEditDesc('');
+      toast.success('List updated successfully!');
+    } catch (error) {
+      console.error('Error updating list:', error);
+      toast.error('Failed to update list');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingList(null);
+    setEditName('');
+    setEditDesc('');
+  };
+
+  // Add movie handlers
+  const handleAddMovieClick = (list) => {
+    setSelectedList(list);
+    setMovieSearch('');
+    setSearchResults([]);
+  };
+
+  const handleSearchMovies = async (e) => {
+    const query = e.target.value;
+    setMovieSearch(query);
+    
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const { data } = await axios.get(`/api/movie/search?query=${query}`);
+      setSearchResults(data.results || []);
+    } catch (error) {
+      console.error('Error searching movies:', error);
+    }
+  };
+
+  const handleSelectMovie = async (movie) => {
+    try {
+      await axios.post(`/api/profile/curator/list/${selectedList.listId}/movie`, {
+        movieId: movie.id,
+        movieTitle: movie.title,
+        moviePoster: movie.poster_path,
+      });
+
+      setLists(lists.map(list => 
+        list.listId === selectedList.listId 
+          ? {
+              ...list,
+              movies: [
+                ...(list.movies || []),
+                {
+                  movieId: movie.id,
+                  movieTitle: movie.title,
+                  moviePoster: movie.poster_path,
+                  addedAt: new Date(),
+                }
+              ]
+            }
+          : list
+      ));
+
+      setSelectedList({ ...selectedList, movies: [...(selectedList.movies || []), movie] });
+      setMovieSearch('');
+      setSearchResults([]);
+      toast.success('Movie added to list!');
+    } catch (error) {
+      console.error('Error adding movie:', error);
+      toast.error('Failed to add movie to list');
+    }
+  };
+
+  const handleRemoveMovie = async (movieId) => {
+    try {
+      await axios.delete(`/api/profile/curator/list/${selectedList.listId}/movie/${movieId}`);
+      
+      setLists(lists.map(list => 
+        list.listId === selectedList.listId 
+          ? {
+              ...list,
+              movies: list.movies.filter(m => m.movieId !== movieId)
+            }
+          : list
+      ));
+
+      setSelectedList({
+        ...selectedList,
+        movies: selectedList.movies.filter(m => m.movieId !== movieId)
+      });
+      
+      toast.success('Movie removed from list!');
+    } catch (error) {
+      console.error('Error removing movie:', error);
+      toast.error('Failed to remove movie');
     }
   };
 
@@ -140,27 +270,141 @@ const CuratorDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {lists.map((list) => (
                   <div key={list.listId} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{list.listName}</h3>
-                    <p className="text-gray-600 mb-4 text-sm">{list.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">{list.movies?.length || 0} movies</span>
-                      <div className="space-x-2">
-                        <button 
-                          onClick={() => handleDeleteList(list.listId)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition text-sm"
-                        >
-                          Delete
-                        </button>
-                        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition text-sm">
-                          Edit
-                        </button>
+                    {editingList === list.listId ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        />
+                        <textarea
+                          value={editDesc}
+                          onChange={(e) => setEditDesc(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          rows="2"
+                        />
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={handleSaveEdit}
+                            className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm transition"
+                          >
+                            Save
+                          </button>
+                          <button 
+                            onClick={handleCancelEdit}
+                            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm transition"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      // View mode
+                      <>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{list.listName}</h3>
+                        <p className="text-gray-600 mb-4 text-sm">{list.description}</p>
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-sm text-gray-500">{list.movies?.length || 0} movies</span>
+                        </div>
+                        
+                        {/* Movies in list */}
+                        {list.movies && list.movies.length > 0 && (
+                          <div className="mb-4 max-h-40 overflow-y-auto">
+                            <p className="text-xs font-semibold text-gray-700 mb-2">Movies:</p>
+                            <div className="space-y-1">
+                              {list.movies.map((movie) => (
+                                <div key={movie.movieId} className="flex justify-between items-center bg-gray-50 p-2 rounded text-xs">
+                                  <span className="truncate">{movie.movieTitle}</span>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedList(list);
+                                      handleRemoveMovie(movie.movieId);
+                                    }}
+                                    className="text-red-500 hover:text-red-700 font-bold"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex gap-2 flex-wrap">
+                          <button 
+                            onClick={() => handleAddMovieClick(list)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition text-sm flex-1"
+                          >
+                            + Movie
+                          </button>
+                          <button 
+                            onClick={() => handleEditClick(list)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition text-sm flex-1"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteList(list.listId)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition text-sm flex-1"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </div>
+
+          {/* Add Movie Modal */}
+          {selectedList && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-96 flex flex-col">
+                <h3 className="text-xl font-bold mb-4">Add Movie to &quot;{selectedList.listName}&quot;</h3>
+                
+                <input
+                  type="text"
+                  value={movieSearch}
+                  onChange={handleSearchMovies}
+                  placeholder="Search movies..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+
+                <div className="flex-1 overflow-y-auto mb-4">
+                  {searchResults.length > 0 ? (
+                    <div className="space-y-2">
+                      {searchResults.map((movie) => (
+                        <button
+                          key={movie.id}
+                          onClick={() => handleSelectMovie(movie)}
+                          className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded transition text-sm"
+                        >
+                          <p className="font-semibold text-gray-900">{movie.title}</p>
+                          <p className="text-xs text-gray-600">{movie.release_date?.substring(0, 4)}</p>
+                        </button>
+                      ))}
+                    </div>
+                  ) : movieSearch.trim() ? (
+                    <p className="text-center text-gray-500 text-sm">No movies found</p>
+                  ) : (
+                    <p className="text-center text-gray-500 text-sm">Type to search for movies</p>
+                  )}
+                </div>
+
+                <button 
+                  onClick={() => setSelectedList(null)}
+                  className="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Curator Features Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-8">
