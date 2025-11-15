@@ -128,7 +128,7 @@ const CuratorDashboard = () => {
     }
 
     try {
-      const { data } = await axios.get(`/api/movie/search?query=${query}`);
+      const { data } = await axios.get(`/api/movies/search?query=${query}`);
       setSearchResults(data.results || []);
     } catch (error) {
       console.error('Error searching movies:', error);
