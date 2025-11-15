@@ -10,10 +10,20 @@ const curatorProfileSchema = new mongoose.Schema(
     },
     curatedLists: [
       {
-        listId: mongoose.Schema.Types.ObjectId,
+        listId: String,
         listName: String,
         description: String,
-        movies: [String],
+        movies: [
+          {
+            movieId: String,
+            movieTitle: String,
+            moviePoster: String,
+            addedAt: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
         createdAt: {
           type: Date,
           default: Date.now,
