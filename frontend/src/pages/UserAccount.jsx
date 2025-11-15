@@ -48,6 +48,7 @@ const UserAccount = ({ user: loggedInUser }) => {
   const { followUser } = UserData();
 
   const followHandler = () => {
+    if (!user || !user._id) return;
     setFollowed(!followed);
     followUser(user._id, fetchUser);
   };

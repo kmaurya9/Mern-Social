@@ -26,7 +26,7 @@ const Chat = ({ chat, setSelectedChat, isOnline }) => {
           </div>
 
           <span className="flex justify-center items-center gap-1">
-            {loggedInUser._id === chat.latestMessage.sender ? (
+            {loggedInUser && loggedInUser._id === chat.latestMessage.sender ? (
               <BsSendCheck />
             ) : (
               ""
