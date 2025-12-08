@@ -32,7 +32,7 @@ const App = () => {
           
           <Routes>
             {/* Public routes - accessible without login */}
-            <Route path="/" element={<About />} />
+            <Route path="/" element={isAuth ? <Home /> : <About />} />
             <Route path="/home" element={<Home />} />
             <Route path="/search" element={<Search />} />
             <Route path="/details/:id" element={<MovieDetails />} />

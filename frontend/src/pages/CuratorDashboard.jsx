@@ -198,7 +198,7 @@ const CuratorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20 pb-20 px-4">
+    <div className="min-h-screen bg-gray-100 pt-24 pb-24 px-4">
       {!isAuth || user?.role !== 'curator' ? (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center p-8">

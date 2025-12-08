@@ -29,7 +29,7 @@ const Home = () => {
       {loading ? (
         <Loading />
       ) : (
-        <div className={`${!isAuth ? 'pt-20' : 'pt-16'}`}>
+        <div className={`min-h-screen pb-24 ${!isAuth ? 'pt-20' : 'pt-16'}`}>
           {/* Hero Section for Anonymous Users */}
           {!isAuth && (
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-12 px-4 text-center">
