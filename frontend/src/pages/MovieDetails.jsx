@@ -237,20 +237,42 @@ const MovieDetails = () => {
                 <div key={rev._id} className="border-b pb-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
-                      <Link to={`/profile/${rev.user._id}`}>
+                      {isAuth ? (
+                        <Link to={`/profile/${rev.user._id}`}>
+                          <img
+                            src={rev.user.profilePic?.url}
+                            alt={rev.user.name}
+                            className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80"
+                          />
+                        </Link>
+                      ) : (
                         <img
                           src={rev.user.profilePic?.url}
                           alt={rev.user.name}
-                          className="w-10 h-10 rounded-full"
+                          className="w-10 h-10 rounded-full opacity-60"
                         />
-                      </Link>
+                      )}
                       <div>
-                        <Link
-                          to={`/profile/${rev.user._id}`}
-                          className="font-semibold hover:text-blue-500"
-                        >
-                          {rev.user.name}
-                        </Link>
+                        {isAuth ? (
+                          <Link
+                            to={`/profile/${rev.user._id}`}
+                            className="font-semibold hover:text-blue-500"
+                          >
+                            {rev.user.name}
+                          </Link>
+                        ) : (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-gray-600">
+                              {rev.user.name}
+                            </span>
+                            <button
+                              onClick={() => window.location.href = '/login'}
+                              className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                            >
+                              Login to View Profile
+                            </button>
+                          </div>
+                        )}
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <FaStar
